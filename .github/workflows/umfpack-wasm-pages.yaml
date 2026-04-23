@@ -64,6 +64,7 @@ jobs:
       - name: Build UMFPACK static libraries and browser bundle
         env:
           OPENBLAS_ROOT: ${{ github.workspace }}/OpenBLAS
+          EMSCRIPTEN_CMAKE_TOOLCHAIN: ${{ env.EMSDK }}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
         run: bash build_umfpack_wasm.sh
 
       - name: Prepare Pages artifact
