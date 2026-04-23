@@ -103,7 +103,7 @@ echo "Installing headers and static libraries into ${INSTALL_DIR}..."
 
 if [ "$BUILD_BROWSER_MODULE" = "1" ]; then
   echo "Building browser bundle in ${ROOT_DIR}/wasm_umfpack..."
-  make -C "$ROOT_DIR/wasm_umfpack" OPENBLAS_BASE="$OPENBLAS_ROOT" wasm
+  make -C "$ROOT_DIR/wasm_umfpack" CC="$EMCC" OPENBLAS_BASE="$OPENBLAS_ROOT" wasm
 fi
 
 echo

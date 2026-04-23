@@ -1,5 +1,5 @@
 ROOT := $(abspath ..)
-CC := /usr/lib/emscripten/emcc
+CC ?= emcc
 
 UMFPACK_INSTALL := $(ROOT)/wasm-install
 OPENBLAS_BASE ?= $(ROOT)/../OpenBLAS
