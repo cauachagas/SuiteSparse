@@ -17,6 +17,15 @@ if [ -z "$TOOLCHAIN_FILE" ] && [ -n "$EMCC" ]; then
     fi
 fi
 
+if [ -z "${EMSCRIPTEN_CMAKE_TOOLCHAIN:-}" ]; then
+  if [ -n "${EMSDK:-}" ] && [ -f "${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" ]; then
+    EMSCRIPTEN_CMAKE_TOOLCHAIN="${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+  else
+    echo "Missing Emscripten CMake toolchain: ${EMSCRIPTEN_CMAKE_TOOLCHAIN:-}"
+    exit 1
+  fi
+fi
+
 CMAKE_BIN=${CMAKE_BIN:-cmake}
 
 OPENBLAS_ROOT=${OPENBLAS_ROOT:-${ROOT_DIR}/../OpenBLAS}

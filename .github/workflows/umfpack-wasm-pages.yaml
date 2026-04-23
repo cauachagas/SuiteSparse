@@ -1,4 +1,4 @@
-name: Publish UMFPACK WebAssembly Pages
+name: UMFPACK-WebAssembly-Pages
 
 on:
   workflow_dispatch:
@@ -30,11 +30,16 @@ concurrency:
 
 jobs:
   build:
-    name: Build UMFPACK WebAssembly bundle
-    runs-on: ubuntu-latest
+    name: Build UMFPACK static libraries and browser bundle
     env:
-      OPENBLAS_REPOSITORY: cauachagas/OpenBLAS
-      OPENBLAS_REF: ${{ inputs.openblas_ref || 'develop' }}
+      OPENBLAS_ROOT: ${{ github.workspace }}/OpenBLAS
+      EMSCRIPTEN_CMAKE_TOOLCHAIN: ${{ env.EMSDK }}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+    run: |
+      test -f "$EMSCRIPTEN_CMAKE_TOOLCHAIN" || {
+        echo "Missing Emscripten CMake toolchain: $EMSCRIPTEN_CMAKE_TOOLCHAIN"
+        exit 1
+      }
+      bash build_umfpack_wasm.sh
 
     steps:
       - name: Checkout SuiteSparse repository
