@@ -4,11 +4,19 @@ set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-EMSCRIPTEN_ROOT=${EMSCRIPTEN_ROOT:-/usr/lib/emscripten}
-EMCC=${EMCC:-${EMSCRIPTEN_ROOT}/emcc}
-EMAR=${EMAR:-${EMSCRIPTEN_ROOT}/emar}
-EMRANLIB=${EMRANLIB:-${EMSCRIPTEN_ROOT}/emranlib}
-TOOLCHAIN_FILE=${EMSCRIPTEN_TOOLCHAIN_FILE:-${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake}
+EMCC=${EMCC:-$(command -v emcc || true)}
+EMAR=${EMAR:-$(command -v emar || true)}
+EMRANLIB=${EMRANLIB:-$(command -v emranlib || true)}
+TOOLCHAIN_FILE=${EMSCRIPTEN_TOOLCHAIN_FILE:-}
+
+if [ -z "$TOOLCHAIN_FILE" ] && [ -n "$EMCC" ]; then
+    EMCC_DIR=$(cd "$(dirname "$EMCC")" && pwd)
+    TOOLCHAIN_CANDIDATE=$(cd "$EMCC_DIR/../upstream/emscripten" 2>/dev/null && pwd || true)
+    if [ -n "$TOOLCHAIN_CANDIDATE" ] && [ -e "$TOOLCHAIN_CANDIDATE/cmake/Modules/Platform/Emscripten.cmake" ]; then
+        TOOLCHAIN_FILE="$TOOLCHAIN_CANDIDATE/cmake/Modules/Platform/Emscripten.cmake"
+    fi
+fi
+
 CMAKE_BIN=${CMAKE_BIN:-cmake}
 
 OPENBLAS_ROOT=${OPENBLAS_ROOT:-${ROOT_DIR}/../OpenBLAS}
