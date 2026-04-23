@@ -1,0 +1,99 @@
+name: Publish UMFPACK WebAssembly Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      openblas_ref:
+        description: Branch, tag, or commit of the OpenBLAS repository
+        required: true
+        default: develop
+  push:
+    branches:
+      - develop
+    paths:
+      - .github/workflows/umfpack-wasm-pages.yaml
+      - build_umfpack_wasm.sh
+      - wasm_umfpack/**
+      - UMFPACK/**
+      - AMD/**
+      - SuiteSparse_config/**
+      - CMakeLists.txt
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: umfpack-wasm-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build UMFPACK WebAssembly bundle
+    runs-on: ubuntu-latest
+    env:
+      OPENBLAS_REPOSITORY: cauachagas/OpenBLAS
+      OPENBLAS_REF: ${{ inputs.openblas_ref || 'develop' }}
+
+    steps:
+      - name: Checkout SuiteSparse repository
+        uses: actions/checkout@v4
+
+      - name: Checkout OpenBLAS repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.OPENBLAS_REPOSITORY }}
+          ref: ${{ env.OPENBLAS_REF }}
+          path: OpenBLAS
+
+      - name: Set up Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.10
+
+      - name: Verify toolchain
+        run: |
+          emcc --version
+          cmake --version
+          make --version
+
+      - name: Build OpenBLAS static library for WASM
+        run: bash OpenBLAS/wasm_build/build_openblas_wasm.sh
+
+      - name: Build UMFPACK static libraries and browser bundle
+        env:
+          OPENBLAS_ROOT: ${{ github.workspace }}/OpenBLAS
+        run: bash build_umfpack_wasm.sh
+
+      - name: Prepare Pages artifact
+        run: |
+          rm -rf pages-dist
+          mkdir -p pages-dist
+          cp wasm_umfpack/index.html pages-dist/
+          cp wasm_umfpack/index-page.js pages-dist/
+          cp wasm_umfpack/umfpack-loader.js pages-dist/
+          cp wasm_umfpack/test.mjs pages-dist/
+          cp wasm_umfpack/test.wasm pages-dist/
+          touch pages-dist/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-dist
+
+  deploy:
+    name: Deploy UMFPACK WebAssembly Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
