@@ -30,7 +30,7 @@ fi
 
 CMAKE_BIN=${CMAKE_BIN:-cmake}
 
-OPENBLAS_ROOT=${OPENBLAS_ROOT:-${ROOT_DIR}/OpenBLAS}
+OPENBLAS_ROOT=${OPENBLAS_ROOT:-${ROOT_DIR}/../OpenBLAS}
 OPENBLAS_INCLUDE_DIR=${OPENBLAS_INCLUDE_DIR:-${OPENBLAS_ROOT}/wasm_build/include}
 OPENBLAS_LIB_DIR=${OPENBLAS_LIB_DIR:-${OPENBLAS_ROOT}/wasm_build/lib}
 OPENBLAS_LIBRARY=${OPENBLAS_LIBRARY:-${OPENBLAS_LIB_DIR}/libopenblas.a}
@@ -103,7 +103,7 @@ echo "Installing headers and static libraries into ${INSTALL_DIR}..."
 
 if [ "$BUILD_BROWSER_MODULE" = "1" ]; then
   echo "Building browser bundle in ${ROOT_DIR}/wasm_umfpack..."
-  make -C "$ROOT_DIR/wasm_umfpack" wasm
+  make -C "$ROOT_DIR/wasm_umfpack" OPENBLAS_BASE="$OPENBLAS_ROOT" wasm
 fi
 
 echo
